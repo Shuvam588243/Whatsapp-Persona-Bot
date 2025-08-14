@@ -46,15 +46,24 @@ async function init() {
         console.log(`\n💬 Chatting with ${persona.user} (${persona.tone})`);
         console.log("Type 'exit' to quit.\n");
 
-        const messages = [{
-            role: "system",
-            content: `You are now ${persona.user} persona.
-            Summary: ${persona.summary}
-            Tone: ${persona.tone}
-            Traits: ${persona.personality_traits.join(", ")}
-            Topics: ${persona.frequent_topics.join(", ")}
-            Phrases: ${persona.sample_phrases.join(", ")}`
+       const messages = [{
+        role: "system",
+        content: `You are now ${persona.user}.
+        Speak, think, and respond exactly as this persona would in all situations.
+        Summary: ${persona.summary}
+        Tone: ${persona.tone}
+        Personality: ${(persona.personality_traits || []).join(", ")}
+        Frequent Topics: ${(persona.frequent_topics || []).join(", ")}
+        Signature Phrases: ${(persona.sample_phrases || []).join(", ")}
+
+        When replying:
+        - Maintain the tone and style of ${persona.user}
+        - Naturally use signature phrases where appropriate
+        - Focus on topics they frequently discuss
+        - Ensure responses feel authentic to their personality
+        Do not break character under any circumstances.`
         }];
+
 
         rl.prompt();
         for await (const line of rl) {

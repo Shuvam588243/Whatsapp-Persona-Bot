@@ -7,39 +7,58 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 
 async function generatePersonaForUser(user, messages) {
-   const prompt = `
-    You are an AI assistant. 
-    Your task is to create a *realistic, human-like persona* for the user based on their chat messages.
+    const prompt = `
+    You are an advanced AI trained to build *realistic, human-like personas* from chat history.
 
-    Follow the COT (Chain of Thought) reasoning process internally:
-
+    USER PROFILE CREATION PROCESS (COT reasoning internally):
     START: Read the user's chat history carefully.
-    THINK: Identify the user's conversational style, tone, humor, politeness, verbosity, common topics, and unique expressions. 
-    Pay attention to the language they use — slang, emoji, code-switching, or mixed languages — and mimic it naturally.
-    EVALUATE: Check if your persona description truly reflects the user's style and personality. Adjust if something feels off.
-    OUTPUT: Provide only valid JSON containing the final persona. Do NOT include the reasoning steps.
+    THINK: Identify conversational style, tone, humor, politeness, verbosity, recurring topics, and unique expressions.
+    - Capture slang, emoji usage, code-switching, or mixed languages.
+    - Match their natural communication style in the persona description.
+    EVALUATE: Ensure the persona reflects how the user actually talks, behaves, and interacts.
+    OUTPUT: Return only valid JSON — no reasoning or explanation text.
 
-    Return ONLY valid JSON in the following format:
+    CORE PERSONALITY:
+    - Capture warmth, sarcasm, friendliness, directness, or professionalism as applicable.
+    - Include emotional tendencies (e.g., cheerful, blunt, empathetic).
+    - Include behavioral cues like use of short responses, story-telling, or motivational tone.
+
+    COMMUNICATION STYLE:
+    - Note greetings or sign-offs if used.
+    - Identify primary language(s) and style of code-switching.
+    - Highlight how they emphasize points (emojis, punctuation, CAPS, repetition).
+    - If humor or sarcasm is used, show how.
+
+    FREQUENT TOPICS:
+    - Extract recurring conversation subjects (e.g., tech, sports, daily life, work).
+    - Include cultural or regional references.
+
+    SAMPLE PHRASES:
+    - Include direct quotes from their chat that are characteristic of their style.
+
+    RESPONSE GUIDELINES:
+    - The persona should sound exactly like the user, using their natural rhythm, language, and tone.
+    - Avoid generic summaries — make it specific and personal.
+
+    Return ONLY valid JSON in this format:
     {
-      "user": "<snake_case_user_name>",
-      "summary": "<summary of user's style, personality, conversation arc>",
-      "tone": "<formal / casual / humorous / sarcastic / friendly / etc>",
-      "personality_traits": ["<trait1>", "<trait2>", "..."],
-      "frequent_topics": ["<topic1>", "<topic2>", "..."],
-      "sample_phrases": ["<phrase1>", "<phrase2>", "..."]
+    "user": "<snake_case_user_name>",
+    "summary": "<summary of user's style, personality, conversation arc>",
+    "tone": "<formal / casual / humorous / sarcastic / friendly / etc>",
+    "personality_traits": ["<trait1>", "<trait2>", "..."],
+    "frequent_topics": ["<topic1>", "<topic2>", "..."],
+    "sample_phrases": ["<phrase1>", "<phrase2>", "..."]
     }
 
     User messages:
     ${messages.map(m => `- ${m}`).join("\n")}
-    `;
-
-
+`;
 
     try {
         const response = await client.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
-                { role: "system", content: "You generate detailed user persona based on chat messages." },
+                { role: "system", content: "You generate detailed, realistic user personas based on chat messages." },
                 { role: "user", content: prompt }
             ]
         });
@@ -61,6 +80,7 @@ async function generatePersonaForUser(user, messages) {
         return { user, summary: "Error generating persona", tone: "unknown", personality_traits: [], frequent_topics: [], sample_phrases: [] };
     }
 }
+
 
 exports.GeneratePersona = async () => {
     const chatsJsonPath = path.join(__dirname, "../chats.json");
