@@ -7,31 +7,33 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 
 async function generatePersonaForUser(user, messages) {
-    const prompt = `
+   const prompt = `
     You are an AI assistant. 
-    Create a detailed persona for this user based on their chat messages.
+    Your task is to create a *realistic, human-like persona* for the user based on their chat messages.
 
-    Include:
-    - Conversation style and arc
-    - Emotional tone
-    - Humor or sarcasm
-    - Politeness and verbosity
-    - Frequent topics
-    - Typical expressions
+    Follow the COT (Chain of Thought) reasoning process internally:
 
-    Return ONLY valid JSON:
+    START: Read the user's chat history carefully.
+    THINK: Identify the user's conversational style, tone, humor, politeness, verbosity, common topics, and unique expressions. 
+    Pay attention to the language they use — slang, emoji, code-switching, or mixed languages — and mimic it naturally.
+    EVALUATE: Check if your persona description truly reflects the user's style and personality. Adjust if something feels off.
+    OUTPUT: Provide only valid JSON containing the final persona. Do NOT include the reasoning steps.
+
+    Return ONLY valid JSON in the following format:
     {
-    "user": "<snake_case_user_name>",
-    "summary": "<summary of user's style, personality, conversation arc>",
-    "tone": "<formal / casual / humorous / sarcastic / friendly / etc>",
-    "personality_traits": ["<trait1>", "<trait2>", "..."],
-    "frequent_topics": ["<topic1>", "<topic2>", "..."],
-    "sample_phrases": ["<phrase1>", "<phrase2>", "..."]
+      "user": "<snake_case_user_name>",
+      "summary": "<summary of user's style, personality, conversation arc>",
+      "tone": "<formal / casual / humorous / sarcastic / friendly / etc>",
+      "personality_traits": ["<trait1>", "<trait2>", "..."],
+      "frequent_topics": ["<topic1>", "<topic2>", "..."],
+      "sample_phrases": ["<phrase1>", "<phrase2>", "..."]
     }
 
     User messages:
     ${messages.map(m => `- ${m}`).join("\n")}
-`;
+    `;
+
+
 
     try {
         const response = await client.chat.completions.create({
