@@ -1,0 +1,9 @@
+node_modules/
+.env
+chats.txt
+package-lock.json
+.DS_Store
+.vscode/
+persona.json
+chats.json
+*.log
