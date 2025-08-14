@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const readline = require("readline");
 
 exports.Extractor = async () => {
     const chatFilePath = path.join(__dirname, "chats.txt");
@@ -10,29 +11,33 @@ exports.Extractor = async () => {
         process.exit(1);
     }
 
-    console.log("📥 Reading chats.txt...");
-    const chatText = fs.readFileSync(chatFilePath, "utf-8");
+    function toSnakeCase(name) {
+        return name.toLowerCase().replace(/\s+/g, "_");
+    }
 
-    const lines = chatText.split("\n").filter(Boolean);
     const chats = {};
 
-    // WhatsApp export format: date, time - user: message
+    const fileStream = fs.createReadStream(chatFilePath, { encoding: "utf-8" });
+
+    const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity
+    });
+
     const regex = /^(\d{1,2}\/\d{1,2}\/\d{2,4}),\s([\d:]{4,8}\s[APM]{2})\s-\s(.*?):\s(.*)$/;
 
-    console.log("📝 Extracting messages per user...");
-    for (const line of lines) {
+    for await (const line of rl) {
         const match = line.match(regex);
         if (match) {
             let [, date, time, user, message] = match;
-
-            // Skip media messages
             if (message === "<Media omitted>") continue;
 
-            if (!chats[user]) chats[user] = [];
-            chats[user].push(message.trim());
+            const key = toSnakeCase(user);
+            if (!chats[key]) chats[key] = [];
+            chats[key].push(message.trim());
         }
     }
 
     fs.writeFileSync(chatsJsonPath, JSON.stringify(chats, null, 2));
-    console.log(`✅ Chats extracted to chats.json for ${Object.keys(chats).length} users`);
+    console.log("✅ Chats extracted to chats.json");
 };
